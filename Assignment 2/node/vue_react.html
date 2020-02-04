@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Assignment2</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="src/index.js"></script>
+	<script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+	<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+	<script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+</head>
+
+<body class="bg-secondary">
+
+    <div id="app" class="container">
+		<div>
+			<h1 class="text-center bg-primary font-weight-bold border border-dark">VueJS Interface</h1>
+		</div>
+		<div class="row">
+			<div class="col align-items-center text-center bg-warning font-italic">
+				<h1>Correlation</h1>
+				<p>{{ result.correlation }}</p>
+			</div>
+			<div class="col align-items-center text-center bg-danger font-italic">
+				<h1>Regression</h1>
+				<p>Beta1: {{ result.regression.beta1 }}</p>
+				<p>Beta0: {{ result.regression.beta0 }}</p>
+			</div>
+			</div>
+			<div class="row">
+				<div class="col text-center bg-success">
+					<input type="file" multiple="multiple" @change="onFileChange">
+				</div>
+				<div class="col text-center bg-success">
+					<button v-on:click="calculate" class="btn btn-warning">Calculate</button>
+				</div>	
+			</div>
+		</div>
+    </div>
+	<br>
+	<br>
+    <div id = "reapp">
+    </div>
+
+    
+<script type = "text/javascript">
+var app = new Vue ({ //eslint-disable-line no-unused-vars, no-undef
+    el: '#app',
+    data: {
+       result : {regression:{beta0: 0 , beta1: 0},correlation:0},
+       content : []
+    },
+methods: {
+    onFileChange(e) {
+    let files = e.target.files
+    if (files.length) {
+	for(let f = 0; f < files.length ; f++) {
+        this.loadNumbers(files[f])
+		
+    }
+  }
+},
+    loadNumbers(file) {
+        let reader = new FileReader()
+        
+        reader.onload = (e) => {
+            this.content.push (e.target.result)
+        }
+        reader.readAsText(file)
+    },
+    
+    calculate(){
+		if(typeof this.content[0] == 'string'){
+        this.fixArray()
+}		//this.content = this.content.reverse()
+		let calc = new MathCalculations(this.content)
+		calc.initCalculations()
+		let results = calc.getAllResults()
+		
+	
+		this.result.correlation = results.correlation
+		this.result.regression.beta1 = results.regression.beta1
+		this.result.regression.beta0 = results.regression.beta0
+  
+
+},
+		fixArray: function (){
+		for(item in this.content){
+        this.content[item] = this.content[item].split("\r\n")
+        for(number in this.content[item]){
+          this.content[item][number] = parseFloat(this.content[item][number])
+        }
+      }
+}
+		
+}
+
+})
+
+</script>
+<script type = "text/babel">
+class ReactFriend extends React.Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      result : {regression:{beta0: 0 , beta1: 0},correlation:0},
+      beta0: 0,
+      beta1: 0,
+      correlation: 0,
+      content : []
+    }
+    this.onFileChange = this.onFileChange.bind(this)
+    this.loadNumbers = this.loadNumbers.bind(this)
+    this.calculate = this.calculate.bind(this)
+    this.fixArray = this.fixArray.bind(this)
+  }
+  onFileChange(e) {
+    let files = e.target.files
+    if (files.length) {
+      for(let f = 0; f < files.length ; f++) {
+        this.loadNumbers(files[f])
+      }
+    }
+  }
+  loadNumbers(file) {
+      let reader = new FileReader()
+      let content = this.state.content
+      reader.onload = (e) => {
+          content.push(e.target.result)
+      }
+      reader.readAsText(file)
+      this.setState((state) => ({content: content}))
+  }
+  calculate(){
+    if(typeof this.state.content[0] == 'string'){
+      this.fixArray()
+    }		//this.content = this.content.reverse()
+    let calc = new MathCalculations(this.state.content)
+    calc.initCalculations()
+    let results = calc.getAllResults()
+    let correlation = results.correlation
+    let b1 = results.regression.beta1
+    let b0 = results.regression.beta0
+    this.setState((state)=>({
+      beta0: b0,
+      beta1: b1,
+      correlation: correlation
+    }))
+  }
+  fixArray (){
+  let content = this.state.content
+		for(let item in content){
+      content[item] = content[item].split("\r\n")
+      for(let number in content[item]){
+        content[item][number] = parseFloat(content[item][number])
+      }
+    }
+	this.setState((state) => {content: content})
+  }
+  render(){
+    return(
+    <div id="reappt" class="container">
+        <h1 class="text-center bg-primary font-weight-bold border border-dark">React Interface</h1>
+		<div class="row">
+			<div class="col align-items-center text-center bg-danger font-italic">
+				<h1>Correlation</h1>
+				<p>{ this.state.correlation }</p>
+			</div>
+			<div class="col align-items-center text-center bg-warning font-italic">
+				<h1>Regression</h1>
+				<p>Beta1: { this.state.beta1 }</p>
+				<p>Beta0: { this.state.beta0 }</p>
+			</div>
+			</div>
+			<div class="row">
+				<div class="col text-center bg-success">
+					<input type="file" multiple="multiple" onChange={this.onFileChange}/>
+				</div>
+				<div class="col text-center bg-success">
+					<button onClick={this.calculate} class="btn btn-danger">Calculate</button>
+				</div>
+			</div>
+    </div>
+    )
+  }
+}
+  const element = <ReactFriend />
+  ReactDOM.render(
+  element,
+  document.getElementById('reapp')
+)
+
+
+
+</script>
+
+    
+</body>
+    
